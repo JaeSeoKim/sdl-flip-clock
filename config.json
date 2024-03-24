@@ -1,0 +1,6 @@
+{
+  "label": "Flip Clock",
+  "icon": "icon/icon.png",
+  "launch": "launch.sh",
+  "description": "Simple Filp Clock by JaeSeoKim"
+}
