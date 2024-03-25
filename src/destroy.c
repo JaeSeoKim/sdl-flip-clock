@@ -3,6 +3,11 @@
 void destroy() {
   printf("##Start destory\n");
 
+  if (access("/tmp/stay_awake", F_OK) != -1) {
+    printf("\tStop stay awake\n");
+    remove("/tmp/stay_awake");
+  }
+
   if (_G.renderer != NULL) {
     printf("\tdestorying renderer...\n");
 #if defined SDL && SDL == 1

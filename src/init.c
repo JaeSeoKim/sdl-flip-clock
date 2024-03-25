@@ -2,20 +2,27 @@
 
 int init() {
   printf("##Start initialization\n");
-  if (SDL_Init(SDL_INIT_VIDEO) < 0 || SDL_ShowCursor(SDL_DISABLE) < 0) {
-    printf("SDL_Init Fail: %s\n", SDL_GetError());
+
+  if (access("/tmp/stay_awake", F_OK) == -1) {
+    printf("\tSet stay awake\n");
+    close(creat("/tmp/stay_awake", 666));
+  }
+
+  if (SDL_Init(SDL_INIT_VIDEO) < 0) {
+    printf("\tSDL_Init Fail: %s\n", SDL_GetError());
     return -1;
   }
 
   if (TTF_Init() < 0) {
-    printf("TTF_Init Fail: %s\n", TTF_GetError());
+    printf("\tTTF_Init Fail: %s\n", TTF_GetError());
     return -1;
   }
 
   if (init_display_Resolution() < 0) {
     return -1;
   }
-  printf("\tDisplay Resolution: %dx%d\n", _G.DISPLAY_WIDTH, _G.DISPLAY_HEIGHT);
+  printf("\t\tDisplay Resolution: %dx%d\n", _G.DISPLAY_WIDTH,
+         _G.DISPLAY_HEIGHT);
 
   _G.MARGIN_X = _G.DISPLAY_WIDTH / 20;
   _G.GAP = 16;
@@ -33,7 +40,7 @@ int init() {
   _G.font = TTF_OpenFont(FONT_LOCATION, _G.TIME_SIZE);
   _G.smFont = TTF_OpenFont(FONT_LOCATION, _G.AMPM_SIZE);
   if (_G.font == NULL || _G.smFont == NULL) {
-    printf("TTF_OpenFont Fail: %s\n", TTF_GetError());
+    printf("\tTTF_OpenFont Fail: %s\n", TTF_GetError());
     return -1;
   }
 
@@ -46,7 +53,7 @@ int init() {
                                _G.DISPLAY_HEIGHT, SDL_WINDOW_SHOWN);
 #endif
   if (_G.window == NULL) {
-    printf("SDL_SetVideoMode Fail: %s\n", SDL_GetError());
+    printf("\tSDL_SetVideoMode Fail: %s\n", SDL_GetError());
     return -1;
   }
 
@@ -58,7 +65,7 @@ int init() {
 #endif
 
   if (_G.renderer == NULL) {
-    printf("SDL_CreateRGBSurface Fail: %s\n", SDL_GetError());
+    printf("\tSDL_CreateRGBSurface Fail: %s\n", SDL_GetError());
     return -1;
   }
 

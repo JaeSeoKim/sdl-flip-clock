@@ -4,6 +4,8 @@
     "sdl.h": "c",
     "sdl_ttf.h": "c",
     "vector": "c",
-    "time.h": "c"
+    "time.h": "c",
+    "__hash_table": "c",
+    "flipclock.h": "c"
   }
 }
