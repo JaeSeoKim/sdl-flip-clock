@@ -1,6 +1,8 @@
 #ifndef FLIP_CLOCK_H__
 #define FLIP_CLOCK_H__
 
+
+
 #if defined SDL && SDL == 1
 #include "SDL/SDL.h"
 #include "SDL/SDL_ttf.h"
@@ -58,6 +60,6 @@ void SDL_RenderFillRoundedRect(SDL_Renderer *renderer, int x, int y, int w,
 void SDL_RenderFillCircle(SDL_Renderer *renderer, int cx, int cy, int radius,
                           Uint32 color);
 
-int __SDL_RenderFillRect(SDL_Renderer *dst, const SDL_Rect *rect, Uint32 color);
+int __SDL_RenderFillRect(SDL_Renderer *dst, SDL_Rect *rect, Uint32 color);
 
 #endif // FLIP_CLOCK_H__

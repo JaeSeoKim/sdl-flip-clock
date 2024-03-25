@@ -64,12 +64,11 @@ void SDL_RenderFillCircle(SDL_Renderer *renderer, int cx, int cy, int radius,
 }
 
 #if defined SDL && SDL == 1
-int __SDL_RenderFillRect(SDL_Renderer *dst, const SDL_Rect *rect,
-                         Uint32 color) {
-  return SDL_FillRect(dst, rect, color)
+int __SDL_RenderFillRect(SDL_Renderer *dst, SDL_Rect *rect, Uint32 color) {
+  return SDL_FillRect(dst, rect, color);
 }
 #else
-int __SDL_RenderFillRect(SDL_Renderer *dst, const SDL_Rect *rect,
+int __SDL_RenderFillRect(SDL_Renderer *dst, SDL_Rect *rect,
                          Uint32 color) {
   SDL_SetRenderDrawColor(dst, color >> 24 & 255, color >> 16 & 255,
                          color >> 8 & 255, color & 255);

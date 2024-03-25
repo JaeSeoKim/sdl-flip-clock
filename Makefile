@@ -4,8 +4,8 @@ CC=$(CROSS_COMPILE)gcc
 CFLAGS+=-I$(INC_DIR)
 
 ifeq ($(MIYOOMINI),1)
-SDL=1
-LDLIBS=-lSDL -lpthread -lSDL_ttf
+CFLAGS+=-DSDL=1
+LDLIBS=-DSDL=1 -lSDL -lpthread -lSDL_ttf
 else
 LDLIBS=-lSDL2 -lpthread -lSDL2_ttf
 endif
