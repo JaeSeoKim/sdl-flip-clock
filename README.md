@@ -25,4 +25,6 @@ This is a simple Flip Clock created using SDL.
 
 1. Download and unzip the latest release file
 2. Move the unzipped folder to the `/App` path on the SD card
+> [!IMPORTANT]  
+> The directory name must be `FlipClock`!
 3. Boot up your Miyoomini and run `Flip Clock` in the Apps section!
