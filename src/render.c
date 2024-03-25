@@ -11,7 +11,7 @@ int calculateRadius(int width, int height, int percent) {
 }
 
 void SDL_RenderFillRoundedRect(SDL_Renderer *renderer, int x, int y, int w,
-                               int h, int percent) {
+                               int h, int percent, Uint32 color) {
   int radius = calculateRadius(w, h, percent);
 
   int x1 = x + radius;
@@ -20,17 +20,18 @@ void SDL_RenderFillRoundedRect(SDL_Renderer *renderer, int x, int y, int w,
   int y2 = y + h - radius;
 
   SDL_Rect rect = {x1, y, w - radius * 2, h};
-  SDL_RenderFillRect(renderer, &rect);
+  __SDL_RenderFillRect(renderer, &rect, color);
   rect = (SDL_Rect){x, y1, w, h - radius * 2};
-  SDL_RenderFillRect(renderer, &rect);
+  __SDL_RenderFillRect(renderer, &rect, color);
 
-  SDL_RenderFillCircle(renderer, x1, y1, radius);
-  SDL_RenderFillCircle(renderer, x2, y1, radius);
-  SDL_RenderFillCircle(renderer, x1, y2, radius);
-  SDL_RenderFillCircle(renderer, x2, y2, radius);
+  SDL_RenderFillCircle(renderer, x1, y1, radius, color);
+  SDL_RenderFillCircle(renderer, x2, y1, radius, color);
+  SDL_RenderFillCircle(renderer, x1, y2, radius, color);
+  SDL_RenderFillCircle(renderer, x2, y2, radius, color);
 }
 
-void SDL_RenderFillCircle(SDL_Renderer *renderer, int cx, int cy, int radius) {
+void SDL_RenderFillCircle(SDL_Renderer *renderer, int cx, int cy, int radius,
+                          Uint32 color) {
   const int diameter = (radius * 2);
 
   int x = (radius - 1);
@@ -41,12 +42,12 @@ void SDL_RenderFillCircle(SDL_Renderer *renderer, int cx, int cy, int radius) {
 
   while (x >= y) {
     for (int i = cx - x; i <= cx + x; i++) {
-      SDL_RenderDrawPoint(renderer, i, cy + y);
-      SDL_RenderDrawPoint(renderer, i, cy - y);
+      __SDL_RenderFillRect(renderer, &(SDL_Rect){i, cy + y, 1, 1}, color);
+      __SDL_RenderFillRect(renderer, &(SDL_Rect){i, cy - y, 1, 1}, color);
     }
     for (int i = cx - y; i <= cx + y; i++) {
-      SDL_RenderDrawPoint(renderer, i, cy + x);
-      SDL_RenderDrawPoint(renderer, i, cy - x);
+      __SDL_RenderFillRect(renderer, &(SDL_Rect){i, cy + x, 1, 1}, color);
+      __SDL_RenderFillRect(renderer, &(SDL_Rect){i, cy - x, 1, 1}, color);
     }
 
     if (error <= 0) {
@@ -61,3 +62,17 @@ void SDL_RenderFillCircle(SDL_Renderer *renderer, int cx, int cy, int radius) {
     }
   }
 }
+
+#if defined SDL && SDL == 1
+int __SDL_RenderFillRect(SDL_Renderer *dst, const SDL_Rect *rect,
+                         Uint32 color) {
+  return SDL_FillRect(dst, rect, color)
+}
+#else
+int __SDL_RenderFillRect(SDL_Renderer *dst, const SDL_Rect *rect,
+                         Uint32 color) {
+  SDL_SetRenderDrawColor(dst, color >> 24 & 255, color >> 16 & 255,
+                         color >> 8 & 255, color & 255);
+  return SDL_RenderFillRect(dst, rect);
+}
+#endif

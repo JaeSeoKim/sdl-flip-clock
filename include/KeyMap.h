@@ -1,7 +1,11 @@
 #ifndef KEYMAP_H__
 #define KEYMAP_H__
 
-#include "SDL2/SDL.h"
+#include "FlipClock.h"
+
+#if SDL != 1
+typedef SDL_Keycode SDLKey;
+#endif
 
 #define BTN_UP SDLK_UP
 #define BTN_UP_BIT 0

@@ -1,7 +1,7 @@
 #include "FlipClock.h"
 
-void handle_keydown(SDL_Keycode sym);
-void handle_keyup(SDL_Keycode sym);
+void handle_keydown(SDLKey sym);
+void handle_keyup(SDLKey sym);
 
 void pollevent() {
   SDL_Event event;
@@ -23,7 +23,7 @@ void pollevent() {
   }
 }
 
-void handle_keydown(SDL_Keycode sym) {
+void handle_keydown(SDLKey sym) {
   switch (sym) {
   case BTN_UP:
     _G.KEY_STATUS |= 1 << BTN_UP_BIT;
@@ -79,7 +79,7 @@ void handle_keydown(SDL_Keycode sym) {
   printf("Key pressed: %s\n", SDL_GetKeyName(sym));
 }
 
-void handle_keyup(SDL_Keycode sym) {
+void handle_keyup(SDLKey sym) {
   switch (sym) {
   case BTN_UP:
     _G.KEY_STATUS &= ~(1 << BTN_UP_BIT);

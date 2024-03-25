@@ -3,19 +3,7 @@
 #define FLIPCLOCK_HOUR 0
 #define FLIPCLOCK_MINIUTE 1
 
-struct FlipCLockStyle {
-  int GAP;
-  int DIVIDER;
-  int MARGIN_X;
-
-  int CARD_SIZE;
-  int CARD_PADDING;
-
-  int TIME_SIZE;
-  int AMPM_SIZE;
-} typedef FlipCLockStyle;
-
-int draw(SDL_Renderer *renderer, const FlipCLockStyle *style) {
+int draw_screen() {
   struct tm *local;
   time_t _time;
   char timeString[3] = "\0\0\0";
@@ -23,8 +11,8 @@ int draw(SDL_Renderer *renderer, const FlipCLockStyle *style) {
   _time = time(&_time);
   local = localtime(&_time);
 
-  int x = style->MARGIN_X;
-  int y = (_G.DISPLAY_HEIGHT - style->CARD_SIZE) / 2;
+  int x = _G.MARGIN_X;
+  int y = (_G.DISPLAY_HEIGHT - _G.CARD_SIZE) / 2;
 
   for (int layout = 0; layout < 2; ++layout) {
     int time_tmp = local->tm_min;
@@ -36,27 +24,38 @@ int draw(SDL_Renderer *renderer, const FlipCLockStyle *style) {
     timeString[1] = time_tmp % 10 + '0';
     timeString[0] = time_tmp / 10 + '0';
 
-    // Draw Rect
-    SDL_SetRenderDrawColor(renderer, 15, 15, 15, 255);
-    SDL_RenderFillRoundedRect(renderer, x, y, style->CARD_SIZE,
-                              style->CARD_SIZE, 10);
+    Uint32 rectColor = 0x222222FF;
+    SDL_RenderFillRoundedRect(_G.renderer, x, y, _G.CARD_SIZE, _G.CARD_SIZE, 10,
+                              rectColor);
+
+    SDL_Color textColor = {186, 186, 186, 255};
 
     // Draw Time
-    TTF_SetFontSize(_G.font, style->TIME_SIZE);
-
     int fontDescentSize = TTF_FontDescent(_G.font);
-    SDL_Color textColor = {186, 186, 186, 255};
     SDL_Surface *textSurface =
         TTF_RenderText_Blended(_G.font, timeString, textColor);
-    SDL_Texture *mTexture = SDL_CreateTextureFromSurface(renderer, textSurface);
 
-    SDL_RenderCopy(renderer, mTexture, NULL,
-                   &(SDL_Rect){x + style->CARD_PADDING +
-                                   (style->TIME_SIZE - textSurface->w) / 2,
-                               y + style->CARD_PADDING + fontDescentSize,
-                               textSurface->w, textSurface->h});
+#if defined SDL && SDL == 1
+    SDL_BlitSurface(
+        textSurface, NULL, _G.renderer,
+        &(SDL_Rect){x + _G.CARD_PADDING + (_G.TIME_SIZE - textSurface->w) / 2,
+                    y + _G.CARD_PADDING + fontDescentSize, textSurface->w,
+                    textSurface->h});
+
+#else
+    SDL_Texture *mTexture =
+        SDL_CreateTextureFromSurface(_G.renderer, textSurface);
+
+    SDL_RenderCopy(
+        _G.renderer, mTexture, NULL,
+        &(SDL_Rect){x + _G.CARD_PADDING + (_G.TIME_SIZE - textSurface->w) / 2,
+                    y + _G.CARD_PADDING + fontDescentSize, textSurface->w,
+                    textSurface->h});
     // free allocated memories
     SDL_DestroyTexture(mTexture);
+#endif
+
+    // free allocated memories
     SDL_FreeSurface(textSurface);
 
     if (layout != FLIPCLOCK_HOUR) {
@@ -64,32 +63,39 @@ int draw(SDL_Renderer *renderer, const FlipCLockStyle *style) {
     }
 
     // Draw AM/PM
-    TTF_SetFontSize(_G.font, style->AMPM_SIZE);
-    fontDescentSize = TTF_FontDescent(_G.font);
-
+    fontDescentSize = TTF_FontDescent(_G.smFont);
     textSurface = TTF_RenderText_Blended(
-        _G.font, local->tm_hour < 11 ? "AM" : "PM", textColor);
-    mTexture = SDL_CreateTextureFromSurface(renderer, textSurface);
+        _G.smFont, local->tm_hour < 11 ? "AM" : "PM", textColor);
 
-    SDL_RenderCopy(renderer, mTexture, NULL,
-                   &(SDL_Rect){x + style->CARD_PADDING / 2,
-                               y + style->CARD_SIZE - style->CARD_PADDING / 2 -
-                                   style->AMPM_SIZE + fontDescentSize,
+#if defined SDL && SDL == 1
+    SDL_BlitSurface(textSurface, NULL, _G.renderer,
+                    &(SDL_Rect){x + _G.CARD_PADDING / 2,
+                                y + _G.CARD_SIZE - _G.CARD_PADDING / 2 -
+                                    _G.AMPM_SIZE + fontDescentSize,
+                                textSurface->w, textSurface->h});
+
+#else
+    mTexture = SDL_CreateTextureFromSurface(_G.renderer, textSurface);
+    SDL_RenderCopy(_G.renderer, mTexture, NULL,
+                   &(SDL_Rect){x + _G.CARD_PADDING / 2,
+                               y + _G.CARD_SIZE - _G.CARD_PADDING / 2 -
+                                   _G.AMPM_SIZE + fontDescentSize,
                                textSurface->w, textSurface->h});
     // free allocated memories
     SDL_DestroyTexture(mTexture);
+#endif
+    // free allocated memories
     SDL_FreeSurface(textSurface);
 
     // Update Position
-    x += style->GAP + style->CARD_SIZE;
+    x += _G.GAP + _G.CARD_SIZE;
   }
 
   // Draw Divider
-  SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-  SDL_RenderFillRect(renderer,
-                     &(SDL_Rect){0, _G.DISPLAY_HEIGHT / 2 - style->DIVIDER,
-                                 _G.DISPLAY_WIDTH, style->DIVIDER});
-
+  __SDL_RenderFillRect(_G.renderer,
+                       &(SDL_Rect){0, _G.DISPLAY_HEIGHT / 2 - _G.DIVIDER,
+                                   _G.DISPLAY_WIDTH, _G.DIVIDER},
+                       0x000000FF);
   return 0;
 }
 
@@ -106,16 +112,6 @@ int handle_key() {
 int draw_loop() {
   printf("##Start rendering loop\n");
 
-  FlipCLockStyle style;
-
-  style.MARGIN_X = _G.DISPLAY_WIDTH / 20;
-  style.GAP = 16;
-  style.DIVIDER = 4;
-  style.CARD_SIZE = (_G.DISPLAY_WIDTH - style.MARGIN_X * 2 - style.GAP) / 2;
-  style.CARD_PADDING = 32;
-  style.TIME_SIZE = style.CARD_SIZE - style.CARD_PADDING * 2;
-  style.AMPM_SIZE = style.TIME_SIZE / 10;
-
   int lastTickCount = SDL_GetTicks();
   int curTickCount = lastTickCount;
 
@@ -126,15 +122,24 @@ int draw_loop() {
     handle_key();
 
     // before draw
+#if defined SDL && SDL == 1
     curTickCount = SDL_GetTicks();
+    Uint32 black = SDL_MapRGB(_G.renderer->format, 0, 0, 0);
+    __SDL_RenderFillRect(_G.renderer, NULL, black);
+#else
     SDL_SetRenderDrawColor(_G.renderer, 0, 0, 0, 255);
     SDL_RenderClear(_G.renderer);
+#endif
 
     // draw
-    draw(_G.renderer, &style);
+    draw_screen();
 
     // after draw
+#if defined SDL && SDL == 1
+    SDL_BlitSurface(_G.renderer, NULL, _G.window, NULL);
+#else
     SDL_RenderPresent(_G.renderer);
+#endif
     lastTickCount = curTickCount;
   }
 
