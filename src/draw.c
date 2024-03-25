@@ -24,7 +24,8 @@ int draw_screen() {
     timeString[1] = time_tmp % 10 + '0';
     timeString[0] = time_tmp / 10 + '0';
 
-    Uint32 rectColor = 0x222222FF;
+    // ARGB
+    Uint32 rectColor = 0xFF222222;
     SDL_RenderFillRoundedRect(_G.renderer, x, y, _G.CARD_SIZE, _G.CARD_SIZE, 10,
                               rectColor);
 
@@ -95,7 +96,8 @@ int draw_screen() {
   __SDL_RenderFillRect(_G.renderer,
                        &(SDL_Rect){0, _G.DISPLAY_HEIGHT / 2 - _G.DIVIDER,
                                    _G.DISPLAY_WIDTH, _G.DIVIDER},
-                       0x000000FF);
+                       // ARGB
+                       0xFF000000);
   return 0;
 }
 

@@ -1,8 +1,6 @@
 #ifndef FLIP_CLOCK_H__
 #define FLIP_CLOCK_H__
 
-
-
 #if defined SDL && SDL == 1
 #include "SDL/SDL.h"
 #include "SDL/SDL_ttf.h"
@@ -12,6 +10,7 @@
 #endif
 
 #include "fcntl.h"
+#include "signal.h"
 #include "stdio.h"
 #include "stdlib.h"
 #include "time.h"

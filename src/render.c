@@ -68,10 +68,9 @@ int __SDL_RenderFillRect(SDL_Renderer *dst, SDL_Rect *rect, Uint32 color) {
   return SDL_FillRect(dst, rect, color);
 }
 #else
-int __SDL_RenderFillRect(SDL_Renderer *dst, SDL_Rect *rect,
-                         Uint32 color) {
-  SDL_SetRenderDrawColor(dst, color >> 24 & 255, color >> 16 & 255,
-                         color >> 8 & 255, color & 255);
+int __SDL_RenderFillRect(SDL_Renderer *dst, SDL_Rect *rect, Uint32 color) {
+  SDL_SetRenderDrawColor(dst, color >> 16 & 255, color >> 8 & 255, color & 255,
+                         color >> 24 & 255);
   return SDL_RenderFillRect(dst, rect);
 }
 #endif

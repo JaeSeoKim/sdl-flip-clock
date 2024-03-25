@@ -1,4 +1,5 @@
 TARGET=flipClock
+VERSION=1.0
 
 CC=$(CROSS_COMPILE)gcc
 CFLAGS+=-I$(INC_DIR)
@@ -37,7 +38,7 @@ all: $(TARGET)
 re: clean all
 
 clean:
-	$(RM) $(RMFLAGS) $(OBJS) $(TARGET)
+	$(RM) $(RMFLAGS) $(OBJS) $(TARGET) FlipClock-v$(VERSION).zip
 
 $(TARGET): ${OBJS}
 	$(CC) $(LDFLAGS) $(LDLIBS) $(OBJS) -o $(TARGET)
@@ -47,5 +48,11 @@ $(OBJ_DIR)/%.o : $(SRC_DIR)/%.c | $(OBJ_DIR)
 
 $(OBJ_DIR):
 	@$(MKDIR) $(MKDIRFLAGS) $(OBJ_DIR)
+
+pack: FlipClock-v$(VERSION).zip
+
+FlipClock-v$(VERSION).zip: $(TARGET)
+	zip -r FlipClock-v$(VERSION).zip fonts flipClock icon config.json launch.sh
+
 
 .PHONY: all clean re
