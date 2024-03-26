@@ -1,8 +1,8 @@
-<h1 align="center">SDL Flip Clock for the Miyoo Mini</h1>
+<h1 align="center">SDL Flip Clock for the MiyooMini series</h1>
 
 <div align="center">
 <label>
-<img src=".github/docs/preview.png" alt="FlipClock Application running on the MiyooMini"/>
+<img src=".github/docs/preview.png" alt="FlipClock Application running on the MiyooMini Plus"/>
 <small><i>Preview!</i></small>
 </label>
 </div>
