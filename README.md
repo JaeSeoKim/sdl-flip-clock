@@ -31,3 +31,27 @@ This is a simple Flip Clock created using SDL.
 > The directory name must be `FlipClock`!
 
 3. Boot up your Miyoomini and run `Flip Clock` in the Apps section!
+
+## ChangeLogs
+
+### v1.1
+
+#### Features
+
+- Change 12/24 mode using <kbd>Start</kbd>
+
+#### Fix
+
+- Improve Performance(6fps -> 58fps)
+  - refactor `RenderFillCircle`
+
+#### Etc
+
+- Refactor bunch of codes...
+
+### v1.0
+
+#### Features
+
+- Always awake
+- Quit the program using <kbd>Menu</kbd> + <kbd>Select</kbd>
