@@ -1,6 +1,10 @@
 #include "FlipClock.h"
 
-FlipClock _G = {640, 480, NULL, NULL, NULL, 0, 0, 0, 0, 0, 0, 0};
+FlipClock _G = {
+    640,  // DISPLAY_WIDTH
+    480,  // DISPLAY_HEIGHT
+    NULL, // Fill the remaining fields with NULL
+};
 
 void quit(int exitcode) {
   destroy();
@@ -13,10 +17,12 @@ int main() {
   signal(SIGSEGV, quit);
 
   if (init() < 0) {
+    printf("init failed\n");
     ret = EXIT_FAILURE;
   }
 
   if (draw_loop() < 0) {
+    printf("draw_lopp failed\n");
     ret = EXIT_FAILURE;
   }
 

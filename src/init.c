@@ -21,15 +21,14 @@ int init() {
   if (init_display_Resolution() < 0) {
     return -1;
   }
-  printf("\t\tDisplay Resolution: %dx%d\n", _G.DISPLAY_WIDTH,
-         _G.DISPLAY_HEIGHT);
+  printf("\tDisplay Resolution: %dx%d\n", _G.DISPLAY_WIDTH, _G.DISPLAY_HEIGHT);
 
   _G.MARGIN_X = _G.DISPLAY_WIDTH / 20;
   _G.GAP = 16;
   _G.DIVIDER = 4;
-  _G.CARD_SIZE = (_G.DISPLAY_WIDTH - _G.MARGIN_X * 2 - _G.GAP) / 2;
-  _G.CARD_PADDING = 32;
-  _G.TIME_SIZE = _G.CARD_SIZE - _G.CARD_PADDING * 2;
+  _G.FLIP_SIZE = (_G.DISPLAY_WIDTH - _G.MARGIN_X * 2 - _G.GAP) / 2;
+  _G.FLIP_PADDING = 32;
+  _G.TIME_SIZE = _G.FLIP_SIZE - _G.FLIP_PADDING * 2;
   _G.AMPM_SIZE = _G.TIME_SIZE / 10;
 
 #if defined SDL && SDL == 1

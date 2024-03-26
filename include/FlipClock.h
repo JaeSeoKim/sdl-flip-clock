@@ -23,44 +23,63 @@ typedef SDL_Surface SDL_Window;
 typedef SDL_Surface SDL_Renderer;
 #endif
 
+#define FLIP_COLOR 0xFF222222
+#define FONT_COLOR 0xFFbababa
+#define BG_COLOR 0xFF000000
+
 struct FlipClock {
   int32_t DISPLAY_WIDTH;
   int32_t DISPLAY_HEIGHT;
-
   SDL_Window *window;
   SDL_Renderer *renderer;
   TTF_Font *font;
   TTF_Font *smFont;
-
+  int KEY_STATUS[16];
   int quit;
-  int16_t KEY_STATUS;
-
+  int lastTickCount;
+  int curTickCount;
   int GAP;
   int DIVIDER;
   int MARGIN_X;
-
-  int CARD_SIZE;
-  int CARD_PADDING;
-
+  int FLIP_SIZE;
+  int FLIP_PADDING;
   int TIME_SIZE;
   int AMPM_SIZE;
 } typedef FlipClock;
 
 extern FlipClock _G;
 
+// init.c
 int init();
-void destroy();
-int draw_loop();
-
-void pollevent();
-
 int init_display_Resolution();
 
-void SDL_RenderFillRoundedRect(SDL_Renderer *renderer, int x, int y, int w,
-                               int h, int percent, Uint32 color);
-void SDL_RenderFillCircle(SDL_Renderer *renderer, int cx, int cy, int radius,
-                          Uint32 color);
+// destroy.c
+void destroy();
 
-int __SDL_RenderFillRect(SDL_Renderer *dst, SDL_Rect *rect, Uint32 color);
+// draw.c
+int draw_loop();
+int handle_key();
+int draw_screen();
+void draw_flip(int x, int y);
+void draw_time(int x, int y, int time);
+void draw_ampm(int x, int y, int hour);
+void draw_divider();
+struct tm *get_local_time();
+
+// pollevent.c
+void pollevent();
+
+// render.c
+void RenderFillRoundedRect(SDL_Renderer *renderer, int x, int y, int w, int h,
+                           int percent, Uint32 color);
+void RenderFillCircle(SDL_Renderer *renderer, int cx, int cy, int radius,
+                      Uint32 color);
+int RenderFillRect(SDL_Renderer *dst, SDL_Rect *rect, Uint32 color);
+int RenderClear(SDL_Renderer *dst, Uint32 color);
+int RenderPresent(SDL_Renderer *renderer, SDL_Window *window);
+int BlitSurface(SDL_Surface *src, SDL_Rect *srcrect, SDL_Renderer *dst,
+                SDL_Rect *dstrect);
+SDL_Surface *RenderText_Blended(TTF_Font *font, const char *text, Uint32 color);
+SDL_Color uint32ToSDLColor(Uint32 color);
 
 #endif // FLIP_CLOCK_H__
