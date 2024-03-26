@@ -6,16 +6,33 @@ int draw_loop() {
   _G.lastTickCount = SDL_GetTicks();
   _G.curTickCount = _G.lastTickCount;
 
+  float fps = 0.0f;
+  int frame = _G.curTickCount;
+  int frameCount = 0;
+
   while (_G.quit == 0) {
     _G.curTickCount = SDL_GetTicks();
     pollevent();
     handle_key();
 
+    // sync frame rate
+    if (_G.curTickCount - _G.lastTickCount < 1000 / FRAME_RATE) {
+      continue;
+    }
+
+    // calculate FPS
+    ++frameCount;
+    if (_G.curTickCount - frame >= 1000) {
+      fps = frameCount / ((_G.curTickCount - frame) / 1000.f);
+      frameCount = 0;
+      frame = _G.curTickCount;
+    }
+
     // before draw
     RenderClear(_G.renderer, BG_COLOR);
 
     // draw
-    draw_screen();
+    draw_screen(fps);
 
     // after draw
     RenderPresent(_G.renderer, _G.window);
@@ -43,13 +60,29 @@ int handle_key() {
     }
   }
 
+  // MENU + X -> toggle `FPS` mode
+  if (_G.KEY_STATUS[BTN_MENU_INDEX] &&
+      _G.KEY_STATUS[BTN_MENU_INDEX] <= _G.curTickCount &&
+      _G.KEY_STATUS[BTN_X_INDEX] &&
+      _G.KEY_STATUS[BTN_X_INDEX] <= _G.curTickCount) {
+
+    _G.KEY_STATUS[BTN_MENU_INDEX] = _G.curTickCount + INPUT_DELAY;
+    _G.KEY_STATUS[BTN_X_INDEX] = _G.curTickCount + INPUT_DELAY;
+
+    if (is_active_mode(MODE_FPS)) {
+      _G.mode &= ~(1 << MODE_FPS);
+    } else {
+      _G.mode |= 1 << MODE_FPS;
+    }
+  }
+
   return 0;
 }
 
 #define FLIPCLOCK_HOUR 0
 #define FLIPCLOCK_MINIUTE 1
 
-int draw_screen() {
+int draw_screen(float fps) {
   struct tm *time = get_local_time();
 
   int x = _G.MARGIN_X;
@@ -78,6 +111,11 @@ int draw_screen() {
   }
 
   draw_divider();
+
+  if (is_active_mode(MODE_FPS)) {
+    draw_fps(fps);
+  }
+
   return 0;
 }
 
@@ -99,14 +137,13 @@ void draw_time(int x, int y, int time) {
       '\0',
   };
 
-  int fontDescentSize = TTF_FontDescent(_G.timeFont);
   SDL_Surface *textSurface =
       RenderText_Blended(_G.timeFont, timeString, FONT_COLOR);
 
   BlitSurface(
       textSurface, NULL, _G.renderer,
       &(SDL_Rect){x + _G.FLIP_PADDING + (_G.TIME_SIZE - textSurface->w) / 2,
-                  y + _G.FLIP_PADDING + fontDescentSize, textSurface->w,
+                  y + _G.FLIP_PADDING + _G.timeFontDescent, textSurface->w,
                   textSurface->h});
 
   // free allocated memories
@@ -114,14 +151,13 @@ void draw_time(int x, int y, int time) {
 }
 
 void draw_ampm(int x, int y, int hour) {
-  int fontDescentSize = TTF_FontDescent(_G.ampmFont);
   SDL_Surface *textSurface =
       RenderText_Blended(_G.ampmFont, hour < 12 ? "AM" : "PM", FONT_COLOR);
 
   BlitSurface(textSurface, NULL, _G.renderer,
               &(SDL_Rect){x + _G.FLIP_PADDING / 2,
                           y + _G.FLIP_SIZE - _G.FLIP_PADDING / 2 -
-                              _G.AMPM_SIZE + fontDescentSize,
+                              _G.AMPM_SIZE + _G.ampmFontDescent,
                           textSurface->w, textSurface->h});
 
   // free allocated memories
@@ -133,4 +169,18 @@ void draw_divider() {
                  &(SDL_Rect){0, _G.DISPLAY_HEIGHT / 2 - _G.DIVIDER,
                              _G.DISPLAY_WIDTH, _G.DIVIDER},
                  BG_COLOR);
+}
+
+void draw_fps(float fps) {
+  char FPS[11] = {
+      '\0',
+  };
+
+  sprintf(FPS, "FPS: %.2f", fps);
+  SDL_Surface *textSurface = RenderText_Blended(_G.ampmFont, FPS, FONT_COLOR);
+  BlitSurface(textSurface, NULL, _G.renderer,
+              &(SDL_Rect){4, 4, textSurface->w, textSurface->h});
+
+  // free allocated memories
+  SDL_FreeSurface(textSurface);
 }

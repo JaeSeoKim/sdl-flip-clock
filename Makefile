@@ -1,8 +1,9 @@
 TARGET=flipClock
-VERSION=1.0
+VERSION=1.1
 
 CC=$(CROSS_COMPILE)gcc
-CFLAGS+=-I$(INC_DIR) -Werror
+# CFLAGS+=-I$(INC_DIR) -Werror
+CFLAGS+=-I$(INC_DIR)
 
 ifeq ($(MIYOOMINI),1)
 CFLAGS+=-DSDL=1

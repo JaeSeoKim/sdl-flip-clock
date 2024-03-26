@@ -40,14 +40,22 @@ void RenderFillCircle(SDL_Renderer *renderer, int cx, int cy, int radius,
   int ty = 1;
   int error = (tx - diameter);
 
+  SDL_Surface *surface =
+      SDL_CreateRGBSurface(0, diameter, diameter, 32, 0x000000FF, 0x0000FF00,
+                           0x00FF0000, 0xFF000000);
+
   while (x >= y) {
-    for (int i = cx - x; i <= cx + x; i++) {
-      RenderFillRect(renderer, &(SDL_Rect){i, cy + y, 1, 1}, color);
-      RenderFillRect(renderer, &(SDL_Rect){i, cy - y, 1, 1}, color);
+    for (int i = radius - x; i <= radius + x; i++) {
+      *(Uint32 *)(surface->pixels + surface->pitch * (radius + y) +
+                  (i * surface->format->BytesPerPixel)) = color;
+      *(Uint32 *)(surface->pixels + surface->pitch * (radius - y) +
+                  (i * surface->format->BytesPerPixel)) = color;
     }
-    for (int i = cx - y; i <= cx + y; i++) {
-      RenderFillRect(renderer, &(SDL_Rect){i, cy + x, 1, 1}, color);
-      RenderFillRect(renderer, &(SDL_Rect){i, cy - x, 1, 1}, color);
+    for (int i = radius - y; i <= radius + y; i++) {
+      *(Uint32 *)(surface->pixels + surface->pitch * (radius + x) +
+                  (i * surface->format->BytesPerPixel)) = color;
+      *(Uint32 *)(surface->pixels + surface->pitch * (radius - x) +
+                  (i * surface->format->BytesPerPixel)) = color;
     }
 
     if (error <= 0) {
@@ -61,6 +69,10 @@ void RenderFillCircle(SDL_Renderer *renderer, int cx, int cy, int radius,
       error += (tx - diameter);
     }
   }
+  BlitSurface(surface, NULL, renderer,
+              &(SDL_Rect){cx - radius, cy - radius, diameter, diameter});
+
+  SDL_FreeSurface(surface);
 }
 
 int RenderFillRect(SDL_Renderer *dst, SDL_Rect *rect, Uint32 color) {

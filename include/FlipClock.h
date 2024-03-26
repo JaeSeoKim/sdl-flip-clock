@@ -23,6 +23,8 @@ typedef SDL_Surface SDL_Window;
 typedef SDL_Surface SDL_Renderer;
 #endif
 
+#define FRAME_RATE 60.0f
+
 #define FLIP_COLOR 0xFF222222
 #define FONT_COLOR 0xFFbababa
 #define BG_COLOR 0xFF000000
@@ -33,7 +35,9 @@ struct FlipClock {
   SDL_Window *window;
   SDL_Renderer *renderer;
   TTF_Font *timeFont;
+  int timeFontDescent;
   TTF_Font *ampmFont;
+  int ampmFontDescent;
   int KEY_STATUS[16];
   int quit;
   int mode;
@@ -50,6 +54,7 @@ struct FlipClock {
 
 #define is_active_mode(MODE) _G.mode & (1 << (MODE))
 #define MODE_AMPM 0
+#define MODE_FPS 1
 
 #define INPUT_DELAY 300;
 
@@ -65,11 +70,12 @@ void destroy();
 // draw.c
 int draw_loop();
 int handle_key();
-int draw_screen();
+int draw_screen(float fps);
 void draw_flip(int x, int y);
 void draw_time(int x, int y, int time);
 void draw_ampm(int x, int y, int hour);
 void draw_divider();
+void draw_fps(float fps);
 struct tm *get_local_time();
 
 // pollevent.c

@@ -44,6 +44,8 @@ int init() {
     printf("\tTTF_OpenFont Fail: %s\n", TTF_GetError());
     return -1;
   }
+  _G.timeFontDescent = TTF_FontDescent(_G.timeFont);
+  _G.ampmFontDescent = TTF_FontDescent(_G.ampmFont);
 
 #if defined SDL && SDL == 1
   _G.window =
