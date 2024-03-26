@@ -32,10 +32,11 @@ struct FlipClock {
   int32_t DISPLAY_HEIGHT;
   SDL_Window *window;
   SDL_Renderer *renderer;
-  TTF_Font *font;
-  TTF_Font *smFont;
+  TTF_Font *timeFont;
+  TTF_Font *ampmFont;
   int KEY_STATUS[16];
   int quit;
+  int mode;
   int lastTickCount;
   int curTickCount;
   int GAP;
@@ -46,6 +47,11 @@ struct FlipClock {
   int TIME_SIZE;
   int AMPM_SIZE;
 } typedef FlipClock;
+
+#define is_active_mode(MODE) _G.mode & (1 << (MODE))
+#define MODE_AMPM 0
+
+#define INPUT_DELAY 300;
 
 extern FlipClock _G;
 

@@ -23,6 +23,8 @@ int init() {
   }
   printf("\tDisplay Resolution: %dx%d\n", _G.DISPLAY_WIDTH, _G.DISPLAY_HEIGHT);
 
+  _G.mode = 1 << MODE_AMPM;
+
   _G.MARGIN_X = _G.DISPLAY_WIDTH / 20;
   _G.GAP = 16;
   _G.DIVIDER = 4;
@@ -36,9 +38,9 @@ int init() {
 #else
   const char *FONT_LOCATION = "./fonts/Oswald-Bold.ttf";
 #endif
-  _G.font = TTF_OpenFont(FONT_LOCATION, _G.TIME_SIZE);
-  _G.smFont = TTF_OpenFont(FONT_LOCATION, _G.AMPM_SIZE);
-  if (_G.font == NULL || _G.smFont == NULL) {
+  _G.timeFont = TTF_OpenFont(FONT_LOCATION, _G.TIME_SIZE);
+  _G.ampmFont = TTF_OpenFont(FONT_LOCATION, _G.AMPM_SIZE);
+  if (_G.timeFont == NULL || _G.ampmFont == NULL) {
     printf("\tTTF_OpenFont Fail: %s\n", TTF_GetError());
     return -1;
   }

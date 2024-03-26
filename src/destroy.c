@@ -26,13 +26,13 @@ void destroy() {
 #endif
   }
 
-  if (_G.font != NULL) {
+  if (_G.timeFont != NULL) {
     printf("\tClosing font...\n");
-    TTF_CloseFont(_G.font);
+    TTF_CloseFont(_G.timeFont);
   }
-  if (_G.smFont != NULL) {
+  if (_G.ampmFont != NULL) {
     printf("\tClosing smFont...\n");
-    TTF_CloseFont(_G.smFont);
+    TTF_CloseFont(_G.ampmFont);
   }
 
   TTF_Quit();

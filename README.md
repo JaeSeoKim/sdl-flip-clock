@@ -13,6 +13,7 @@ This is a simple Flip Clock created using SDL.
 
 - Always awake
 - Quit the program using <kbd>Menu</kbd> + <kbd>Select</kbd>
+- Change 12/24 mode using <kbd>Start</kbd>
 - And ... that's it all!
 
 ## Download
@@ -25,6 +26,8 @@ This is a simple Flip Clock created using SDL.
 
 1. Download and unzip the latest release file
 2. Move the unzipped folder to the `/App` path on the SD card
-> [!IMPORTANT]  
+
+> [!IMPORTANT]
 > The directory name must be `FlipClock`!
+
 3. Boot up your Miyoomini and run `Flip Clock` in the Apps section!

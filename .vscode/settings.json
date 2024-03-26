@@ -3,5 +3,5 @@
     "functional": "c",
     "flipclock.h": "c"
   },
-  "color-highlight.useARGB": true
+  "color-highlight.useARGB": true,
 }

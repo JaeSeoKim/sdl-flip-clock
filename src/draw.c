@@ -32,6 +32,17 @@ int handle_key() {
     _G.quit = 1;
   }
 
+  // START -> toggle `12/24` mode
+  if (_G.KEY_STATUS[BTN_START_INDEX] &&
+      _G.KEY_STATUS[BTN_START_INDEX] <= _G.curTickCount) {
+    _G.KEY_STATUS[BTN_START_INDEX] = _G.curTickCount + INPUT_DELAY;
+    if (is_active_mode(MODE_AMPM)) {
+      _G.mode &= ~(1 << MODE_AMPM);
+    } else {
+      _G.mode |= 1 << MODE_AMPM;
+    }
+  }
+
   return 0;
 }
 
@@ -45,18 +56,20 @@ int draw_screen() {
   int y = (_G.DISPLAY_HEIGHT - _G.FLIP_SIZE) / 2;
 
   for (int layout = 0; layout < 2; ++layout) {
-    int display_time_number = time->tm_min;
+    int display_time_number =
+        layout == FLIPCLOCK_HOUR ? time->tm_hour : time->tm_min;
 
-    if (layout == FLIPCLOCK_HOUR) {
-      display_time_number = (time->tm_hour % 12);
-      if (display_time_number == 0)
+    if (layout == FLIPCLOCK_HOUR && is_active_mode(MODE_AMPM)) {
+      display_time_number %= 12;
+      if (display_time_number == 0) {
         display_time_number = 12;
+      }
     }
 
     draw_flip(x, y);
     draw_time(x, y, display_time_number);
 
-    if (layout == FLIPCLOCK_HOUR) {
+    if (layout == FLIPCLOCK_HOUR && is_active_mode(MODE_AMPM)) {
       draw_ampm(x, y, time->tm_hour);
     }
 
@@ -86,9 +99,9 @@ void draw_time(int x, int y, int time) {
       '\0',
   };
 
-  int fontDescentSize = TTF_FontDescent(_G.font);
+  int fontDescentSize = TTF_FontDescent(_G.timeFont);
   SDL_Surface *textSurface =
-      RenderText_Blended(_G.font, timeString, FONT_COLOR);
+      RenderText_Blended(_G.timeFont, timeString, FONT_COLOR);
 
   BlitSurface(
       textSurface, NULL, _G.renderer,
@@ -101,9 +114,9 @@ void draw_time(int x, int y, int time) {
 }
 
 void draw_ampm(int x, int y, int hour) {
-  int fontDescentSize = TTF_FontDescent(_G.smFont);
+  int fontDescentSize = TTF_FontDescent(_G.ampmFont);
   SDL_Surface *textSurface =
-      RenderText_Blended(_G.smFont, hour < 12 ? "AM" : "PM", FONT_COLOR);
+      RenderText_Blended(_G.ampmFont, hour < 12 ? "AM" : "PM", FONT_COLOR);
 
   BlitSurface(textSurface, NULL, _G.renderer,
               &(SDL_Rect){x + _G.FLIP_PADDING / 2,
@@ -119,6 +132,5 @@ void draw_divider() {
   RenderFillRect(_G.renderer,
                  &(SDL_Rect){0, _G.DISPLAY_HEIGHT / 2 - _G.DIVIDER,
                              _G.DISPLAY_WIDTH, _G.DIVIDER},
-
                  BG_COLOR);
 }
