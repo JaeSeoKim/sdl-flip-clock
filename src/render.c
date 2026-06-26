@@ -43,6 +43,10 @@ void RenderFillCircle(SDL_Renderer *renderer, int cx, int cy, int radius,
   SDL_Surface *surface =
       SDL_CreateRGBSurface(0, diameter, diameter, 32, 0x000000FF, 0x0000FF00,
                            0x00FF0000, 0xFF000000);
+  if (surface == NULL) {
+    return;
+  }
+  SDL_FillRect(surface, NULL, 0);
 
   while (x >= y) {
     for (int i = radius - x; i <= radius + x; i++) {
@@ -76,48 +80,56 @@ void RenderFillCircle(SDL_Renderer *renderer, int cx, int cy, int radius,
 }
 
 int RenderFillRect(SDL_Renderer *dst, SDL_Rect *rect, Uint32 color) {
-#if defined SDL && SDL == 1
-  return SDL_FillRect(dst, rect, color);
-#else
-  SDL_SetRenderDrawColor(dst, color >> 16 & 255, color >> 8 & 255, color & 255,
-                         color >> 24 & 255);
-  return SDL_RenderFillRect(dst, rect);
-#endif
+  (void)dst;
+  if (_G.frameSurface == NULL) {
+    return -1;
+  }
+  SDL_Color sdlColor = uint32ToSDLColor(color);
+  Uint32 mapped = SDL_MapRGBA(_G.frameSurface->format, sdlColor.r, sdlColor.g,
+                              sdlColor.b, sdlColor.a);
+  return SDL_FillRect(_G.frameSurface, rect, mapped);
 }
 
-int RenderPresent(SDL_Renderer *renderer, SDL_Window *window) {
-#if defined SDL && SDL == 1
-  return SDL_BlitSurface(renderer, NULL, window, NULL);
-#else
+int RenderPresent(SDL_Renderer *renderer) {
+  if (_G.frameSurface != NULL && _G.frameTexture != NULL) {
+    SDL_UpdateTexture(_G.frameTexture, NULL, _G.frameSurface->pixels,
+                      _G.frameSurface->pitch);
+    SDL_RenderCopy(renderer, _G.frameTexture, NULL, NULL);
+  }
   SDL_RenderPresent(renderer);
   return 0;
-#endif
 }
 
 int RenderClear(SDL_Renderer *dst, Uint32 color) {
-#if defined SDL && SDL == 1
+  (void)dst;
   return RenderFillRect(dst, NULL, color);
-#else
-  SDL_SetRenderDrawColor(dst, color >> 16 & 255, color >> 8 & 255, color & 255,
-                         color >> 24 & 255);
-  return SDL_RenderClear(dst);
-#endif
 }
 
 int BlitSurface(SDL_Surface *src, SDL_Rect *srcrect, SDL_Renderer *dst,
                 SDL_Rect *dstrect) {
-#if defined SDL && SDL == 1
-  return SDL_BlitSurface(src, srcrect, dst, dstrect);
-#else
-  SDL_Texture *mTexture = SDL_CreateTextureFromSurface(dst, src);
-  if (mTexture == NULL) {
+  (void)dst;
+  if (_G.frameSurface == NULL) {
     return -1;
   }
-  int ret = SDL_RenderCopy(dst, mTexture, NULL, dstrect);
-  SDL_DestroyTexture(mTexture);
-  return ret;
-#endif
+  return BlitSurfaceToSurface(src, srcrect, _G.frameSurface, dstrect);
 };
+
+int BlitSurfaceToSurface(SDL_Surface *src, SDL_Rect *srcrect,
+                         SDL_Surface *dst, SDL_Rect *dstrect) {
+  if (src == NULL || dst == NULL) {
+    return -1;
+  }
+  SDL_SetSurfaceBlendMode(src, SDL_BLENDMODE_BLEND);
+  if (dstrect != NULL) {
+    int sourceW = srcrect != NULL ? srcrect->w : src->w;
+    int sourceH = srcrect != NULL ? srcrect->h : src->h;
+    if (dstrect->w == sourceW && dstrect->h == sourceH) {
+      return SDL_BlitSurface(src, srcrect, dst, dstrect);
+    }
+    return SDL_BlitScaled(src, srcrect, dst, dstrect);
+  }
+  return SDL_BlitSurface(src, srcrect, dst, dstrect);
+}
 
 SDL_Surface *RenderText_Blended(TTF_Font *font, const char *text,
                                 Uint32 color) {

@@ -1,13 +1,6 @@
 #include "FlipClock.h"
 
 int init() {
-  printf("##Start initialization\n");
-
-  if (access("/tmp/stay_awake", F_OK) == -1) {
-    printf("\tSet stay awake\n");
-    close(creat("/tmp/stay_awake", 666));
-  }
-
   if (SDL_Init(SDL_INIT_VIDEO) < 0) {
     printf("\tSDL_Init Fail: %s\n", SDL_GetError());
     return -1;
@@ -21,7 +14,6 @@ int init() {
   if (init_display_Resolution() < 0) {
     return -1;
   }
-  printf("\tDisplay Resolution: %dx%d\n", _G.DISPLAY_WIDTH, _G.DISPLAY_HEIGHT);
 
   _G.mode = 1 << MODE_AMPM;
 
@@ -33,11 +25,7 @@ int init() {
   _G.TIME_SIZE = _G.FLIP_SIZE - _G.FLIP_PADDING * 2;
   _G.AMPM_SIZE = _G.TIME_SIZE / 10;
 
-#if defined SDL && SDL == 1
-  const char *FONT_LOCATION = "/mnt/SDCARD/App/FlipClock/fonts/Oswald-Bold.ttf";
-#else
   const char *FONT_LOCATION = "./fonts/Oswald-Bold.ttf";
-#endif
   _G.timeFont = TTF_OpenFont(FONT_LOCATION, _G.TIME_SIZE);
   _G.ampmFont = TTF_OpenFont(FONT_LOCATION, _G.AMPM_SIZE);
   if (_G.timeFont == NULL || _G.ampmFont == NULL) {
@@ -46,49 +34,64 @@ int init() {
   }
   _G.timeFontDescent = TTF_FontDescent(_G.timeFont);
   _G.ampmFontDescent = TTF_FontDescent(_G.ampmFont);
+  struct tm *time = get_local_time();
+  _G.manualTimeEnabled = 0;
+  _G.manualHour = time->tm_hour;
+  _G.manualMinute = time->tm_min;
+  _G.menuOpen = 0;
+  _G.menuIndex = 0;
+  _G.menuEditMode = 0;
+  _G.menuEditField = 0;
+  for (int i = 0; i < 2; ++i) {
+    _G.cards[i].currentValue = -1;
+    _G.cards[i].nextValue = -1;
+  }
 
-#if defined SDL && SDL == 1
-  _G.window =
-      SDL_SetVideoMode(_G.DISPLAY_WIDTH, _G.DISPLAY_HEIGHT, 32, SDL_HWSURFACE);
-#else
   _G.window = SDL_CreateWindow("Flip Clock", SDL_WINDOWPOS_UNDEFINED,
                                SDL_WINDOWPOS_UNDEFINED, _G.DISPLAY_WIDTH,
                                _G.DISPLAY_HEIGHT, SDL_WINDOW_SHOWN);
-#endif
   if (_G.window == NULL) {
-    printf("\tSDL_SetVideoMode Fail: %s\n", SDL_GetError());
+    printf("\tSDL_CreateWindow Fail: %s\n", SDL_GetError());
     return -1;
   }
 
-#if defined SDL && SDL == 1
-  _G.renderer = SDL_CreateRGBSurface(SDL_HWSURFACE, _G.DISPLAY_WIDTH,
-                                     _G.DISPLAY_HEIGHT, 32, 0, 0, 0, 0);
-#else
   _G.renderer = SDL_CreateRenderer(_G.window, -1, 0);
-#endif
-
   if (_G.renderer == NULL) {
-    printf("\tSDL_CreateRGBSurface Fail: %s\n", SDL_GetError());
+    printf("\tSDL_CreateRenderer Fail: %s\n", SDL_GetError());
     return -1;
   }
 
-  printf("##Finish initialization\n\n");
+  _G.frameSurface =
+      SDL_CreateRGBSurface(0, _G.DISPLAY_WIDTH, _G.DISPLAY_HEIGHT, 16, 0, 0, 0,
+                           0);
+  if (_G.frameSurface == NULL) {
+    printf("\tSDL_CreateRGBSurface frame Fail: %s\n", SDL_GetError());
+    return -1;
+  }
+
+  _G.frameTexture =
+      SDL_CreateTexture(_G.renderer, SDL_PIXELFORMAT_RGB565,
+                        SDL_TEXTUREACCESS_STREAMING, _G.DISPLAY_WIDTH,
+                        _G.DISPLAY_HEIGHT);
+  if (_G.frameTexture == NULL) {
+    printf("\tSDL_CreateTexture frame Fail: %s\n", SDL_GetError());
+    return -1;
+  }
+
   return 0;
 }
 
 int init_display_Resolution() {
-#if defined SDL && SDL == 1
-  const SDL_VideoInfo *info = SDL_GetVideoInfo();
-  _G.DISPLAY_WIDTH = info->current_w;
-  _G.DISPLAY_HEIGHT = info->current_h;
-#else
   SDL_DisplayMode mode;
   if (SDL_GetDesktopDisplayMode(0, &mode)) {
-    printf("SDL_GetDesktopDisplayMode Fail: %s\n", SDL_GetError());
-    return -1;
+    return 0;
   }
+
+  if (mode.w <= 0 || mode.h <= 0) {
+    return 0;
+  }
+
   _G.DISPLAY_WIDTH = mode.w;
   _G.DISPLAY_HEIGHT = mode.h;
-#endif
   return 0;
 }

@@ -2,6 +2,11 @@
 .DS_Store
 
 # output
-objs
+output/
+
+# legacy output
+out/
+build/
+objs/
 flipClock
 FlipClock-v*.zip

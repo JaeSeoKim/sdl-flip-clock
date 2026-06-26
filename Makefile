@@ -1,48 +1,59 @@
-TARGET=flipClock
-VERSION=1.1
+TARGET_NAME ?= flipClock
+CONFIG_FILE ?= config.json
+VERSION ?= $(shell sed -n 's/.*"version"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' $(CONFIG_FILE))
+ifeq ($(strip $(VERSION)),)
+VERSION := 0.0.0
+endif
 
 CC=$(CROSS_COMPILE)gcc
 # CFLAGS+=-I$(INC_DIR) -Werror
 CFLAGS+=-I$(INC_DIR)
+CFLAGS+=-MMD -MP
+CFLAGS+=$(WARNFLAGS)
 
-ifeq ($(MIYOOMINI),1)
-CFLAGS+=-DSDL=1
-LDLIBS=-DSDL=1 -lSDL -lpthread -lSDL_ttf
-else
-LDLIBS=-lSDL2 -lpthread -lSDL2_ttf
-endif
-
-ifeq ($(MIYOOMINI),1)
-CROSS_COMPILE?=~/buildroot/output/host/bin/arm-linux-gnueabihf-
-SYSROOT	?= $(shell ${CC} --print-sysroot)
-ARCH=-marm -mtune=cortex-a7 -mfpu=neon-vfpv4 -mfloat-abi=hard -march=armv7ve+simd
-CFLAGS+=-Os $(ARCH) -I${SYSROOT}/usr/include -ffunction-sections -fdata-sections -Wall
-LDFLAGS+=-I${SYSROOT}/usr/lib $(ARCH) -Bstatic,-lutil,-Bdynamic
-endif
+SDL2_CONFIG ?= sdl2-config
+SDL2_CFLAGS ?= $(shell $(SDL2_CONFIG) --cflags)
+SDL2_LIBS ?= $(shell $(SDL2_CONFIG) --libs) -lSDL2_ttf
+CFLAGS+=$(SDL2_CFLAGS)
+LDLIBS=$(SDL2_LIBS) -lpthread -lm
 
 RM=rm
 RMFLAGS=-rf
 
+CP=cp
+CPFLAGS=-R
+
 MKDIR=mkdir
 MKDIRFLAGS=-p
 
-OUTPUT_DIR=build
+OUTPUT_DIR ?= output
+BUILD_PROFILE ?= local
+BUILD_DIR=$(OUTPUT_DIR)/build/$(BUILD_PROFILE)
+BINARY_DIR=$(BUILD_DIR)/binary
 INC_DIR=include
 SRC_DIR=src
-OBJ_DIR=objs
+OBJ_DIR=$(BUILD_DIR)/objects
+TARGET=$(BINARY_DIR)/$(TARGET_NAME)
 
 SRCS=$(wildcard $(SRC_DIR)/*.c)
 OBJS=$(addprefix $(OBJ_DIR)/, $(notdir $(SRCS:.c=.o)))
+DEPS=$(OBJS:.o=.d)
+
+LEGACY_OUTPUTS=out build objs $(TARGET_NAME) FlipClock-v*.zip
 
 all: $(TARGET)
 
 re: clean all
 
 clean:
-	$(RM) $(RMFLAGS) $(OBJS) $(TARGET) FlipClock-v$(VERSION).zip
+	$(RM) $(RMFLAGS) $(OUTPUT_DIR) $(LEGACY_OUTPUTS)
+
+clean-build:
+	$(RM) $(RMFLAGS) $(BUILD_DIR)
 
 $(TARGET): ${OBJS}
-	$(CC) $(LDFLAGS) $(LDLIBS) $(OBJS) -o $(TARGET)
+	@$(MKDIR) $(MKDIRFLAGS) $(BINARY_DIR)
+	$(CC) $(LDFLAGS) $(OBJS) $(LDLIBS) -o $(TARGET)
 
 $(OBJ_DIR)/%.o : $(SRC_DIR)/%.c | $(OBJ_DIR)
 	$(CC) $(CFLAGS) -c $< -o $@
@@ -50,10 +61,10 @@ $(OBJ_DIR)/%.o : $(SRC_DIR)/%.c | $(OBJ_DIR)
 $(OBJ_DIR):
 	@$(MKDIR) $(MKDIRFLAGS) $(OBJ_DIR)
 
-pack: FlipClock-v$(VERSION).zip
+-include $(DEPS)
 
-FlipClock-v$(VERSION).zip: $(TARGET)
-	zip -r FlipClock-v$(VERSION).zip fonts flipClock icon config.json launch.sh
+onionos:
+	$(MAKE) -C distributions/onionos package
 
 
-.PHONY: all clean re
+.PHONY: all clean clean-build re onionos
